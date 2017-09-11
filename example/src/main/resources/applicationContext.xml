@@ -2,7 +2,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd  http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
     <!--Spring 配置文件，主要配置和业务逻辑有关的 -->
     <context:component-scan base-package="com.hk">
@@ -27,6 +28,34 @@
 
     </bean>
 
+    <!--配置扫描器，将mybatis 接口 的实现 加入到ioc容器中 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--扫描 所有dao接口的实现 ，加入到ioc容器中 -->
+        <property name="basePackage" value="com.hk.dao"></property>
+    </bean>
+
+    <!--事务控制的配置 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="pooledDataSource" ></property>
+
+    </bean>
+
+    <!--开启基于注解的事务 -->
+
+    <aop:config >
+        <aop:pointcut id="txPoint" expression="execution(* com.hk.service..*(..))"></aop:pointcut>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txPoint"/>
+    </aop:config>
+
+    <tx:advice id="txAdvice">
+        <tx:attributes>
+            <tx:method  name="*"/>
+            <tx:method name ="get*" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+
+<!--spring 配置文件的核心点（数据源、与mybatis的整合，事务控制）-->
 
 
 </beans>
